@@ -21,7 +21,7 @@ const registerUser = asyncHandlerUsingPromise( async (req, res) => {
         throw new ApiErrorHandler(400, "All fields are required to register!")
     }
     // user is already there
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
 
@@ -30,13 +30,19 @@ const registerUser = asyncHandlerUsingPromise( async (req, res) => {
     }
     //  check for user-avatar || cover-image
     const avatarLocalPath = req.files?.avatar[0]?.path
-    console.log(req.files);
-    const coverImageLocalPath = req.files?.coverImage[0]?.path
+    // console.log(req.files);
     if (!avatarLocalPath) {
         throw new ApiErrorHandler(400, "Avatar is required to register.")
-    } else if(!coverImageLocalPath) {
-        throw new ApiErrorHandler("Are you sure? You want to continue without cover image.")
+    } 
+    //const coverImageLocalPath = req.files?.coverImage[0]?.path
+    //else if(!coverImageLocalPath) {
+    //     throw new ApiErrorHandler("Are you sure? You want to continue without cover image.")
+    // }
+    let coverImageLocalPath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
     }
+
     // upload to cloudinary || confirm for avatar
     const avatar = await uploadOnCloudinary(avatarLocalPath);
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
