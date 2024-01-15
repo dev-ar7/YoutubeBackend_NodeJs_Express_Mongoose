@@ -377,15 +377,15 @@ const updateUserCoverImage = asyncHandlerUsingPromise(
 // Delete User
 const deleteUser = asyncHandlerUsingPromise (
     async (req, res) => {
-        const {password, confirmPassord} = req.body;
+        const {password, confirmPassword} = req.body;
 
-        if (password !== confirmPassord) {
+        if (password !== confirmPassword) {
             throw new ApiErrorHandler(400, "Your password and confirm password doesn't match.")
         }
 
-        const user = User.findOne(req.user._id);
+        const user = User.findById(req.user?._id);
 
-        const isPasswordValid = user.isPasswordCorrect(password);
+        const isPasswordValid = await user.isPasswordCorrect(password);
 
         if(!isPasswordValid) {
             throw new ApiErrorHandler(400, "Wrong Credentials!")
