@@ -292,7 +292,7 @@ const updateUserDetails = asyncHandlerUsingPromise(
                 }
             },
             {new: true}
-        ).select("-password -refreshToken")
+        ).select("-password")
 
         return res.status(200)
             .json(
@@ -372,7 +372,45 @@ const updateUserCoverImage = asyncHandlerUsingPromise(
                 )
             )
     }
-)
+);
+
+// Delete User
+const deleteUser = asyncHandlerUsingPromise (
+    async (req, res) => {
+        const {password, confirmPassord} = req.body;
+
+        if (password !== confirmPassord) {
+            throw new ApiErrorHandler(400, "Your password and confirm password doesn't match.")
+        }
+
+        const user = User.findOne(req.user._id);
+
+        const isPasswordValid = user.isPasswordCorrect(password);
+
+        if(!isPasswordValid) {
+            throw new ApiErrorHandler(400, "Wrong Credentials!")
+        }
+
+        await User.findByIdAndDelete(req.user._id);
+
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+
+        res.status(200)
+            .clearCookie("accessToken", options)
+            .clearCookie("refreshToken", options)
+            .json(
+                new ApiResponseHandler(
+                    200,
+                    {},
+                    "User deleted successfully..."
+                )
+            )
+    }
+);
+
 
 export {
     registerUser, 
@@ -383,5 +421,6 @@ export {
     getCurrentUser,
     updateUserDetails,
     updateUserAvatar,
-    updateUserCoverImage
+    updateUserCoverImage,
+    deleteUser
 }
