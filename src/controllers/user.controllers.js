@@ -391,7 +391,7 @@ const deleteUser = asyncHandlerUsingPromise (
             throw new ApiErrorHandler(400, "Wrong Credentials!")
         }
 
-        await User.findByIdAndDelete(req.user._id);
+        await User.findByIdAndDelete(req.user?._id);
 
         const options = {
             httpOnly: true,
