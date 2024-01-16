@@ -374,42 +374,127 @@ const updateUserCoverImage = asyncHandlerUsingPromise(
     }
 );
 
-// Delete User
-const deleteUser = asyncHandlerUsingPromise (
-    async (req, res) => {
-        const {password, confirmPassword} = req.body;
+const getUserChannelProfileDetails = asyncHandlerUsingPromise(
+    async(req, res) => {
+        const { username } = req.params
 
-        if (password !== confirmPassword) {
-            throw new ApiErrorHandler(400, "Your password and confirm password doesn't match.")
+        if(!username?.trim()) {
+            throw new ApiErrorHandler(400, "Invalid Username")
         }
 
-        const user = User.findById(req.user?._id);
+        const channel = await User.aggregate(
+            [
+                // to match with the username from the params and the document in db
+                {
+                    $match: {
+                        username: username?.toLoverCase()
+                    }
+                },
+                // marging two document for subscribers
+                {
+                    $lookup: {
+                        from: "subscriptions",
+                        localField: "_id",
+                        foreignField: "channel",
+                        as: "subscribers"
+                    }
+                },
+                // marging two document for subscribedTo
+                {
+                    $lookup: {
+                        from: "subscriptions",
+                        localField: "_id",
+                        foreignField: "subscriber",
+                        as: "subscribedTo"
+                    }
+                },
+                // adding new fields to existing Document
+                {
+                    $addFields: {
+                        // counting total number of subscribers
+                        subscribersCount: {
+                            $size: "$subscribers"
+                        },
+                        // counting total numbers of channels subscribed to
+                        channelsTheUserSubscribedTo: {
+                            $size: "$subscribedTo"
+                        },
+                        isSubscribed: {
+                            $cond: {
+                                if: {$in: [req.user?._id, "$subscribers.subscriber"]},
+                                then: true,
+                                else: false
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        username: 1,
+                        fullName: 1,
+                        email: 1,
+                        avatar: 1,
+                        coverImage: 1,
+                        subscribersCount: 1,
+                        channelsTheUserSubscribedTo: 1,
+                        isSubscribed: 1 
+                    }
+                }
+            ]
+        );
+        console.log(channel);
 
-        const isPasswordValid = await user.isPasswordCorrect(password);
-
-        if(!isPasswordValid) {
-            throw new ApiErrorHandler(400, "Wrong Credentials!")
+        if(!channel?.length) {
+            throw new ApiErrorHandler(404, "Channel does not exists")
         }
 
-        await User.findByIdAndDelete(req.user?._id);
-
-        const options = {
-            httpOnly: true,
-            secure: true
-        }
-
-        res.status(200)
-            .clearCookie("accessToken", options)
-            .clearCookie("refreshToken", options)
+        return res.status(200)
             .json(
                 new ApiResponseHandler(
                     200,
-                    {},
-                    "User deleted successfully..."
+                    channel[0],
+                    "User channel fetched..."
                 )
             )
     }
 );
+
+// Delete User
+// const deleteUser = asyncHandlerUsingPromise (
+//     async (req, res) => {
+//         const {password, confirmPassword} = req.body;
+
+//         if (password !== confirmPassword) {
+//             throw new ApiErrorHandler(400, "Your password and confirm password doesn't match.")
+//         }
+
+//         const user = User.findById(req.user?._id);
+
+//         const isPasswordValid = await user.isPasswordCorrect(password);
+
+//         if(!isPasswordValid) {
+//             throw new ApiErrorHandler(400, "Wrong Credentials!")
+//         }
+
+//         await User.findByIdAndDelete(req.user?._id);
+
+//         const options = {
+//             httpOnly: true,
+//             secure: true
+//         }
+
+//         res.status(200)
+//             .clearCookie("accessToken", options)
+//             .clearCookie("refreshToken", options)
+//             .json(
+//                 new ApiResponseHandler(
+//                     200,
+//                     {},
+//                     "User deleted successfully..."
+//                 )
+//             )
+//     }
+// );
 
 
 export {
@@ -422,5 +507,6 @@ export {
     updateUserDetails,
     updateUserAvatar,
     updateUserCoverImage,
-    deleteUser
+    //deleteUser
+    getUserChannelProfileDetails
 }
