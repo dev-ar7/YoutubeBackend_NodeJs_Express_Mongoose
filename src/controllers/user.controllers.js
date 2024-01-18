@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 
 import  {asyncHandlerUsingPromise} from '../utils/asyncHandler.js';
@@ -5,7 +6,7 @@ import {ApiErrorHandler} from '../utils/ApiErrorHandler.js';
 import {ApiResponseHandler} from '../utils/ApiResponseHandler.js';
 import { User } from '../models/user.models.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
-import mongoose from 'mongoose';
+
  
 
 // generate Refresh and Access Tokens
