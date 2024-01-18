@@ -164,8 +164,11 @@ const logoutUser = asyncHandlerUsingPromise(async (req, res) => {
     User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined
+            // $set: {
+            //     refreshToken: undefined
+            // }
+            $unset: {
+                refreshToken: 1 // without changing the value this removes the field from document.
             }
         },
         {
@@ -516,41 +519,41 @@ const getWatchHistory = asyncHandlerUsingPromise(
 )
 
 // Delete User
-// const deleteUser = asyncHandlerUsingPromise (
-//     async (req, res) => {
-//         const {password, confirmPassword} = req.body;
+const deleteUser = asyncHandlerUsingPromise (
+    async (req, res) => {
+        const {password, confirmPassword} = req.body;
 
-//         if (password !== confirmPassword) {
-//             throw new ApiErrorHandler(400, "Your password and confirm password doesn't match.")
-//         }
+        if (password !== confirmPassword) {
+            throw new ApiErrorHandler(400, "Your password and confirm password doesn't match.")
+        }
 
-//         const user = User.findById(req.user?._id);
+        const user = User.findById(req.user?._id);
 
-//         const isPasswordValid = await user.isPasswordCorrect(password);
+        const isPasswordValid = await user.isPasswordCorrect(password);
 
-//         if(!isPasswordValid) {
-//             throw new ApiErrorHandler(400, "Wrong Credentials!")
-//         }
+        if(!isPasswordValid) {
+            throw new ApiErrorHandler(400, "Wrong Credentials!")
+        }
 
-//         await User.findByIdAndDelete(req.user?._id);
+        await User.findByIdAndDelete(req.user?._id);
 
-//         const options = {
-//             httpOnly: true,
-//             secure: true
-//         }
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
 
-//         res.status(200)
-//             .clearCookie("accessToken", options)
-//             .clearCookie("refreshToken", options)
-//             .json(
-//                 new ApiResponseHandler(
-//                     200,
-//                     {},
-//                     "User deleted successfully..."
-//                 )
-//             )
-//     }
-// );
+        res.status(200)
+            .clearCookie("accessToken", options)
+            .clearCookie("refreshToken", options)
+            .json(
+                new ApiResponseHandler(
+                    200,
+                    {},
+                    "User deleted successfully..."
+                )
+            )
+    }
+);
 
 
 export {
