@@ -89,7 +89,7 @@ const registerUser = asyncHandlerUsingPromise( async (req, res) => {
         "-password -refreshToken"
     )
     
-    // remove password and refreshToken fro mresponse
+    // remove password and refreshToken from mresponse
     if (!userFromDBbyId) {
         throw new ApiErrorHandler(500, "Something went wrong while registering the user")
     }
@@ -288,7 +288,7 @@ const updateUserDetails = asyncHandlerUsingPromise(
             throw new ApiErrorHandler(400, "All fields are required")
         }
 
-        const user = User.findByIdAndUpdate(
+        const user = await User.findByIdAndUpdate(
             req.user?._id,
             {
                 $set: {
