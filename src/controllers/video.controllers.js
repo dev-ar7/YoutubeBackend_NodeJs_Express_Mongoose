@@ -5,7 +5,6 @@ import {ApiErrorHandler} from '../utils/ApiErrorHandler.js';
 import {ApiResponseHandler} from '../utils/ApiResponseHandler.js';
 import { Video } from '../models/video.models.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
-import { User } from '../models/user.models.js';
 
 
 const getAllVideos = asyncHandlerUsingPromise(
@@ -102,19 +101,72 @@ const getVideoById = asyncHandlerUsingPromise(
     }
 )
 
+// get videoId by url and update videosss
 const updateVideo = asyncHandlerUsingPromise(async (req, res) => {
     const { videoId } = req.params
-    //TODO: update video details like title, description, thumbnail
+
+    const { title, description } = req.body
+    if (!title || !description) {
+        throw new ApiErrorHandler(400, "All fields are required!!")
+    }
+
+    const thumbnailPath = req.file?.path
+    if (!thumbnailPath) {
+        throw new ApiErrorHandler(400, "Thumbnail file is missing!")
+    }
+
+    const thumbnail = await uploadOnCloudinary(thumbnailPath);
+
+    if (!thumbnail.url) {
+        throw new ApiErrorHandler(400, "Error while uploading thumbnail")
+    }
+
+    const video = await Video.findByIdAndUpdate(
+        videoId,
+        {
+            $set: {
+                thumbnail: thumbnail.url,
+                title,
+                description
+            }
+        },
+        {new: true}
+    )
+
+    return res.status(200)
+        .json(
+            new ApiResponseHandler(
+                200,
+                video,
+                "Video details updated successfully."
+            )
+        )
 
 })
 
 const deleteVideo = asyncHandlerUsingPromise(async (req, res) => {
     const { videoId } = req.params
-    //TODO: delete video
+
+    if (!videoId) {
+        throw new ApiErrorHandler(400, "Invalid Request")
+    }
+
+    await Video.findByIdAndDelete(videoId);
+
+    return res.status(200)
+        .json(
+            new ApiResponseHandler(
+                200,
+                {},
+                "Video has been deleted successfully."
+            )
+        )
+
 })
 
 const togglePublishStatus = asyncHandlerUsingPromise(async (req, res) => {
     const { videoId } = req.params
+    // TODO
 })
 
 export {
