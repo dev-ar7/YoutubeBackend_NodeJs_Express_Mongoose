@@ -20,8 +20,6 @@ import userRouter from './routes/user.routes.js';
 import videoRouter from "./routes/video.routes.js";
 import postRouter from "./routes/post.routes.js";
 import healthcheckRouter from "./routes/apiHealthcheck.routes.js";
-// import healthcheckRouter from "./routes/healthcheck.routes.js"
-// import tweetRouter from "./routes/tweet.routes.js"
 // import subscriptionRouter from "./routes/subscription.routes.js"
 // import commentRouter from "./routes/comment.routes.js"
 // import likeRouter from "./routes/like.routes.js"
