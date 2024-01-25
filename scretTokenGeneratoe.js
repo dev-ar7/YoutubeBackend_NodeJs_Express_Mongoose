@@ -8,4 +8,4 @@ const generateToken = (length = 32) => {
 // Generate a token
 const secretToken = generateToken();
 
-console.log('Generated Token:', secretToken);
+// console.log('Generated Token:', secretToken);
