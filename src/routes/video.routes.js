@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { publishAVideo } from '../controllers/video.controllers.js';
+import { publishAVideo, getAllVideos, getVideoById, updateVideo, deleteVideo, togglePublishStatus } from '../controllers/video.controllers.js';
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 import {upload} from "../middlewares/multer.middleware.js"
 
@@ -8,7 +8,7 @@ router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
 
 router
     .route("/")
-    // .get(getAllVideos)
+    .get(getAllVideos)
     .post(
         upload.fields([
             {
