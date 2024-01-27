@@ -9,8 +9,48 @@ import { uploadOnCloudinary } from '../utils/cloudinary.js';
 
 const getAllVideos = asyncHandlerUsingPromise(
     async (req, res) => {
-        const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
-        //TODO: get all videos based on query, sort, pagination
+        try {
+            const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+            
+            const filter = {}
+            if(!query) {
+                throw new ApiErrorHandler(400, "Invalid Request")
+            }
+
+            if(query) {
+                filter.$or = [
+                    {title: { $regex: query, $options: "i" }},
+                    { description: { $regex: query, $options: "i" }}
+                ];
+            }
+
+            if (userId) {
+                filter.owner = userId
+            }
+
+            const sort = {}
+
+            if (sortBy) {
+                sort[sortBy] = sortType === "desc" ? -1 : 1;
+            }
+
+            const videos = await Video.find(filter)
+                .skip((page -1) *limit)
+                .limit(limit)
+                .sort(sort)
+
+            return res.status(200)
+                .json(
+                    new ApiResponseHandler(
+                        200,
+                        videos,
+                        "Video Fetched Successfully"
+                    )
+                )
+
+        } catch (error) {
+            throw new ApiErrorHandler(400, error.message)
+        }
     }
 )
 
