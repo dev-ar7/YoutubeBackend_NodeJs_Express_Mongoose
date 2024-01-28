@@ -122,11 +122,15 @@ const getVideoById = asyncHandlerUsingPromise(
         try {
             const { videoId } = req.params
             if (!videoId) {
-                throw new ApiErrorHandler(404, "Sorry! No Video Found.")
+                throw new ApiErrorHandler(400, "Invalid Request")
             }
     
             const video = await Video.findById(videoId);
     
+            if (!video) {
+                throw new ApiErrorHandler(404, "No video Found!")
+            }
+
             return res.status(200)
                 .json(
                     new ApiResponseHandler(
